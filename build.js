@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 // --- CONFIGURATION ---
-const SHEET_ID = 'ΤΟ_ID_TOU_SHEET_SOU'; // Βάλε το δικό σου ID εδώ
+const SHEET_ID = '1ZHWN37AiS31AmREDukFhikvWBNdG1pEXl6v4KGXeTvc'; // Βάλε το δικό σου ID εδώ
 const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 const DIST_DIR = './dist';
 
