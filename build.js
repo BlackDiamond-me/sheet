@@ -60,16 +60,21 @@ async function build() {
       // Ορίζουμε ότι το /short/[id] πάει στο /posts/[slug].html
       redirectLines.push(`/short/${postID}  /posts/${postFileName}  301`);
       // --- C. ΔΗΜΙΟΥΡΓΙΑ ARTICLE ---
-          ///////////////////////////////////////////////////////////////////////////////////////////========================
+      ///////////////////////////////////////////////////////////////////////////////////////////========================
       const postHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
+    <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${post.Title} | Spreadsheet Test</title>
-    <link href='${post.Title}' rel='canonical'/>
+    <title>${post.Title} | Spreadsheeting Test</title>
+    <meta name='description' content="${post.Title}" />
+    <link rel="canonical" href="${SITE_URL}/posts/${postFileName}" />
     <link rel="shortlink" href="${fullShortUrl}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
         body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
         img { max-width: 100%; border-radius: 12px; height: auto; }
@@ -129,10 +134,15 @@ async function build() {
 <!DOCTYPE html>
 <html lang="el">
 <head>
+    <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spreadsheet Test</title>
+    <title>Spreadsheeting Test</title>
     <meta name='description' content='just test google spreadsheet ' />
+    <link rel="canonical" href="${SITE_URL}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
         body { font-family: sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: auto; }
@@ -147,7 +157,7 @@ async function build() {
 <body>
     <div class="container">
         <header style="text-align:center; padding: 40px 0;">
-            <h1>Spreadsheet Test</h1>
+            <h1>Spreadsheeting Test</h1>
             <p>Static Site Generated from Google Sheets</p>
         </header>
         <main class="grid">${indexCards}</main>
