@@ -137,11 +137,16 @@ async function build() {
 }
 
 
+
+
+build();
+
+
+
+
+
 // Αντιγραφή του robots.txt από το public στο dist
 if (fs.existsSync('./public/robots.txt')) {
     fs.copyFileSync('./public/robots.txt', path.join(DIST_DIR, 'robots.txt'));
     console.log('✅ Robots.txt copied from public to dist');
 }
-
-
-build();
