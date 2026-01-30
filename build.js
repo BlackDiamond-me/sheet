@@ -86,7 +86,7 @@ async function build() {
             // HTML snippet για την αρχική σελίδα
             indexCards += `
             <div class="card">
-                <img src="${post.Image}" alt="${post.Title}" loading="lazy">
+            //    <img src="${post.Image}" alt="${post.Title}" loading="lazy">
                 <div class="card-body">
                     <h2>${post.Title}</h2>
                     <p>${post.Content ? post.Content.replace(/<[^>]*>/g, '').substring(0, 120) : ''}...</p>
