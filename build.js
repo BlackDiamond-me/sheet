@@ -75,7 +75,8 @@ async function build() {
         <div class="meta">Δημοσιεύτηκε: ${post.Puplished} | Tags: ${post.Tags}</div>
     </header>
     <main>
-       <!-- <img src="${post.Image}" alt="${post.Title}"> -->
+       // post.Image
+       // post.Title
         <div class="content">${post.Content}</div>
     </main>
 </body>
@@ -86,7 +87,7 @@ async function build() {
             // HTML snippet για την αρχική σελίδα
             indexCards += `
             <div class="card">
-            //    <img src="${post.Image}" alt="${post.Title}" loading="lazy">
+            //    post.Image  loading="lazy"
                 <div class="card-body">
                     <h2>${post.Title}</h2>
                     <p>${post.Content ? post.Content.replace(/<[^>]*>/g, '').substring(0, 120) : ''}...</p>
