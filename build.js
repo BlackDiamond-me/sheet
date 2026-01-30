@@ -75,7 +75,7 @@ async function build() {
         <div class="meta">Δημοσιεύτηκε: ${post.Puplished} | Tags: ${post.Tags}</div>
     </header>
     <main>
-        <img src="${post.Image}" alt="${post.Title}">
+       <!-- <img src="${post.Image}" alt="${post.Title}"> -->
         <div class="content">${post.Content}</div>
     </main>
 </body>
@@ -103,6 +103,7 @@ async function build() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Vanilla Journal</title>
+    <meta name='description' content='just test google spreadsheet '  />
     <style>
         body { font-family: sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: auto; }
