@@ -145,8 +145,22 @@ build();
 
 
 
+
+
+// Δημιουργία του robots.txt μέσα στο dist την ώρα του build (χωρίς sitemap)
+const robotsContent = `User-agent: *
+Allow: /`;
+
+fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), robotsContent);
+console.log('🤖 robots.txt created (minimal version)');
+
+
+/*
+
 // Αντιγραφή του robots.txt από το public στο dist
 if (fs.existsSync('./public/robots.txt')) {
     fs.copyFileSync('./public/robots.txt', path.join(DIST_DIR, 'robots.txt'));
     console.log('✅ Robots.txt copied from public to dist');
 }
+
+*/
