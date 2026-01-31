@@ -8,12 +8,51 @@ const DIST_DIR = './dist';
 const SITE_URL = 'https://sheet-8jh.pages.dev';
 
 // ==========================================================================================================
-function greekToLatin(t) {
-  var m = {'α':'a','β':'v','γ':'g','δ':'d','ε':'e','ζ':'z','η':'i','θ':'th','ι':'i','κ':'k','λ':'l','μ':'m','ν':'n','ξ':'x','ο':'o','π':'p','ρ':'r','σ':'s','ς':'s','τ':'t','υ':'y','φ':'f','χ':'ch','ψ':'ps','ω':'o','ά':'a','έ':'e','ή':'i','ί':'i','ό':'o','ύ':'y','ώ':'o','ϊ':'i','ΐ':'i','ϋ':'y','ΰ':'y'};
-  if (!t) return 'untitled';
-  return String(t).toLowerCase()
+function convertGreekToLatin(text) {
+  if (!text) return 'untitled';
+  var m = {
+    'α': 'a',
+    'ά': 'a',
+    'β': 'b',
+    'γ': 'g',
+    'δ': 'd',
+    'ε': 'e',
+    'έ': 'e',
+    'ζ': 'z',
+    'η': 'i',
+    'ή': 'i',
+    'θ': 'th',
+    'ι': 'i',
+    'ί': 'i',
+    'ϊ': 'i',
+    'ΐ': 'i',
+    'κ': 'k',
+    'λ': 'l',
+    'μ': 'm',
+    'ν': 'n',
+    'ξ': 'ks',
+    'ο': 'o',
+    'ό': 'o',
+    'π': 'p',
+    'ρ': 'r',
+    'σ': 's',
+    'ς': 's',
+    'τ': 't',
+    'υ': 'u',
+    'ύ': 'u',
+    'ϋ': 'u',
+    'ΰ': 'u',
+    'φ': 'f',
+    'χ': 'x',
+    'ψ': 'ps',
+    'ω': 'o',
+    'ώ': 'o',
+  };
+  return String(text).toLowerCase()
     /* Προσθήκη όλων των τονισμένων στο regex για να τα "πιάνει" η αντικατάσταση */
-    .replace(/[α-ώάέήίόύώϊΐϋΰ]/g, function(c) { return m[c] || c; })
+    .replace(/[α-ώάέήίόύώϊΐϋΰ]/g, function(c) {
+      return m[c] || c;
+    })
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'untitled';
 }
@@ -48,7 +87,7 @@ async function build() {
     let redirectLines = [];
 
     rows.forEach(post => {
-      const slug = greekToLatin(post.Title);
+      const slug = convertGreekToLatin(post.Title);
       const postID = post.id ? post.id.toString().trim() : 'no-id';
       const postFolder = path.join(DIST_DIR, 'post', slug);
       
