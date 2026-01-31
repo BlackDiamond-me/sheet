@@ -8,28 +8,57 @@ const DIST_DIR = './dist';
 const SITE_URL = 'https://sheet-8jh.pages.dev';
 
 // ==========================================================================================================
-const greekToLatinMap = {
-  'α':'a','β':'v','γ':'g','δ':'d','ε':'e','ζ':'z','η':'i','θ':'th',
-  'ι':'i','κ':'k','λ':'l','μ':'m','ν':'n','ξ':'x','ο':'o','π':'p',
-  'ρ':'r','σ':'s','ς':'s','τ':'t','υ':'y','φ':'f','χ':'ch','ψ':'ps','ω':'o',
-  'ά':'a','έ':'e','ή':'i','ί':'i','ό':'o','ύ':'y','ώ':'o','ϊ':'i','ΐ':'i',
-  'ϋ':'y','ΰ':'y'
-};
+function greekToLatin(t) {
+  var m = {
+    'α': 'a',
+    'β': 'v',
+    'γ': 'g',
+    'δ': 'd',
+    'ε': 'e',
+    'ζ': 'z',
+    'η': 'i',
+    'θ': 'th',
+    'ι': 'i',
+    'κ': 'k',
+    'λ': 'l',
+    'μ': 'm',
+    'ν': 'n',
+    'ξ': 'x',
+    'ο': 'o',
+    'π': 'p',
+    'ρ': 'r',
+    'σ': 's',
+    'ς': 's',
+    'τ': 't',
+    'υ': 'y',
+    'φ': 'f',
+    'χ': 'ch',
+    'ψ': 'ps',
+    'ω': 'o',
+    'ά': 'a',
+    'έ': 'e',
+    'ή': 'i',
+    'ί': 'i',
+    'ό': 'o',
+    'ύ': 'y',
+    'ώ': 'o',
+    'ϊ': 'i',
+    'ΐ': 'i',
+    'ϋ': 'y',
+    'ΰ': 'y'
+  };
+  if (!t) return 'untitled';
+  return String(t).toLowerCase()
+    .replace(/[α-ώϊΐϋΰ]/g, function(c) {
+      return m[c] || c;
+    })
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'untitled';
+}
 
-const transliterateGreek = text => {
-  return text.toLowerCase().split('').map(ch => greekToLatinMap[ch] || ch).join('');
-};
 
-const slugify = text => {
-  if (!text) return 'untitled';
-  var latin = transliterateGreek(text.toString());
-  return latin.trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]+/g, '')
-    .replace(/\-\-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-};
+
+
 
 async function build() {
   try {
@@ -59,7 +88,7 @@ async function build() {
     let redirectLines = [];
 
     rows.forEach(post => {
-      const slug = slugify(post.Title);
+      const slug = greekToLatin(post.Title);
       const postID = post.id ? post.id.toString().trim() : 'no-id';
       const postFolder = path.join(DIST_DIR, 'post', slug);
       
