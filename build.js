@@ -107,7 +107,7 @@ async function build() {
     <main>
         <div class="content">${post.Content}</div>
         <div class="short-url-box">
-            <label>Σύνδεσμος κοινοποίησης (Short URL):</label>
+            <label>Short URL:</label>
             <input type="text" value="${fullShortUrl}" readonly onclick="this.select()">
         </div>
     </main>
