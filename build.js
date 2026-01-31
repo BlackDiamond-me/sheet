@@ -37,13 +37,16 @@ const slugify = text => {
 async function build() {
   try {
     console.log('🚀 Starting a fresh build...');
+    
+    // 1. Καθαρισμός και προετοιμασία φακέλων
     if (fs.existsSync(DIST_DIR)) {
       fs.rmSync(DIST_DIR, { recursive: true, force: true });
     }
     fs.mkdirSync(DIST_DIR);
-    fs.mkdirSync(path.join(DIST_DIR, 'post')); 
+    fs.mkdirSync(path.join(DIST_DIR, 'post')); // Αρχικός φάκελος posts
     fs.mkdirSync(path.join(DIST_DIR, 'api'));  
 
+    // 2. Λήψη δεδομένων
     const response = await fetch(GVIZ_URL);
     const rawText = await response.text();
     const jsonString = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
@@ -59,28 +62,39 @@ async function build() {
     });
     console.log(`📦 Processed ${rows.length} posts from Sheets.`);
 
+    // 3. Generation Loop
     let indexCards = '';
     let redirectLines = [];
 
     rows.forEach(post => {
       const slug = slugify(post.Title);
       const postID = post.id ? post.id.toString().trim() : 'no-id';
-      const postFileName = slug; 
+      
+      // Δημιουργία υποφακέλου για το συγκεκριμένο post (για Clean URL)
+      const postFolder = path.join(DIST_DIR, 'post', slug);
+      if (!fs.existsSync(postFolder)) {
+        fs.mkdirSync(postFolder, { recursive: true });
+      }
+
       const postJsonName = `${postID}.json`;
       const fullShortUrl = `${SITE_URL}/short/${postID}`;
       
-      // Το Canonical URL χωρίς .html στο τέλος
-      const canonicalUrl = `${SITE_URL}/post/${postFileName}`;
+      // Το Canonical δείχνει στο URL χωρίς .html
+      const canonicalUrl = `${SITE_URL}/post/${slug}/`;
 
+      // JSON API
       fs.writeFileSync(path.join(DIST_DIR, 'api', postJsonName), JSON.stringify(post, null, 2));
 
-      redirectLines.push(`/short/${postID}  /post/${postFileName}  301`);
+      // Redirects (δείχνει πλέον στον φάκελο)
+      redirectLines.push(`/short/${postID}  /post/${slug}/  301`);
 
+      // HTML Content
       const postHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${post.Title} | Spreadsheeting Test</title>
     <meta name='description' content="${post.Title}" />
@@ -106,31 +120,34 @@ async function build() {
     <main>
         <div class="content">${post.Content}</div>
         <div class="short-url-box">
-            <label>Σύνδεσμος κοινοποίησης (Short URL):</label>
+            <label>Short URL:</label>
             <input type="text" value="${fullShortUrl}" readonly onclick="this.select()">
         </div>
     </main>
 </body>
 </html>`;
       
-      // Αποθήκευση ως αρχείο χωρίς επέκταση για Clean URLs
-      fs.writeFileSync(path.join(DIST_DIR, 'post', postFileName), postHtml);
+      // Γράφουμε το αρχείο ως index.html ΜΕΣΑ στο φάκελο του slug
+      fs.writeFileSync(path.join(postFolder, 'index.html'), postHtml);
 
+      // Index card link (δείχνει στον φάκελο)
       indexCards += `
             <div class="card">
                 <div class="card-body">
                     <h2>${post.Title}</h2>
                     <p>${post.Content ? post.Content.replace(/<[^>]*>/g, '').substring(0, 120) : ''}...</p>
-                    <a href="/post/${postFileName}">Διαβάστε περισσότερα</a>
+                    <a href="/post/${slug}/">Διαβάστε περισσότερα</a>
                 </div>
             </div>`;
     });
 
+    // 4. Index.html (Main Page)
     const indexHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spreadsheeting Test</title>
     <link rel="canonical" href="${SITE_URL}" />
@@ -159,7 +176,7 @@ async function build() {
     fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), `User-agent: *\nAllow: /`);
     fs.writeFileSync(path.join(DIST_DIR, '_redirects'), redirectLines.join('\n'));
 
-    console.log('✨ Build complete! Clean URLs and Canonical tags are set.');
+    console.log('✨ Build complete! Your site is now SEO-friendly and working perfectly on Cloudflare.');
   } catch (err) {
     console.error('💥 Build failed:', err);
   }
