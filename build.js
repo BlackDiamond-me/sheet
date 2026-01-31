@@ -8,7 +8,6 @@ const DIST_DIR = './dist';
 const SITE_URL = 'https://sheet-8jh.pages.dev';
 
 // ==========================================================================================================
-// Greek to Latin transliteration για URLs
 const greekToLatinMap = {
   'α':'a','β':'v','γ':'g','δ':'d','ε':'e','ζ':'z','η':'i','θ':'th',
   'ι':'i','κ':'k','λ':'l','μ':'m','ν':'n','ξ':'x','ο':'o','π':'p',
@@ -18,9 +17,7 @@ const greekToLatinMap = {
 };
 
 const transliterateGreek = text => {
-  return text.toLowerCase().split('').map(function(ch){
-    return greekToLatinMap[ch] || ch;
-  }).join('');
+  return text.toLowerCase().split('').map(ch => greekToLatinMap[ch] || ch).join('');
 };
 
 const slugify = text => {
@@ -37,16 +34,13 @@ const slugify = text => {
 async function build() {
   try {
     console.log('🚀 Starting a fresh build...');
-    
-    // 1. Καθαρισμός και προετοιμασία φακέλων
     if (fs.existsSync(DIST_DIR)) {
       fs.rmSync(DIST_DIR, { recursive: true, force: true });
     }
     fs.mkdirSync(DIST_DIR);
-    fs.mkdirSync(path.join(DIST_DIR, 'post')); // Αρχικός φάκελος posts
+    fs.mkdirSync(path.join(DIST_DIR, 'post')); 
     fs.mkdirSync(path.join(DIST_DIR, 'api'));  
 
-    // 2. Λήψη δεδομένων
     const response = await fetch(GVIZ_URL);
     const rawText = await response.text();
     const jsonString = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
@@ -60,46 +54,39 @@ async function build() {
       });
       return obj;
     });
-    console.log(`📦 Processed ${rows.length} posts from Sheets.`);
 
-    // 3. Generation Loop
     let indexCards = '';
     let redirectLines = [];
 
     rows.forEach(post => {
       const slug = slugify(post.Title);
       const postID = post.id ? post.id.toString().trim() : 'no-id';
-      
-      // Δημιουργία υποφακέλου για το συγκεκριμένο post (για Clean URL)
       const postFolder = path.join(DIST_DIR, 'post', slug);
+      
       if (!fs.existsSync(postFolder)) {
         fs.mkdirSync(postFolder, { recursive: true });
       }
 
-      const postJsonName = `${postID}.json`;
       const fullShortUrl = `${SITE_URL}/short/${postID}`;
-      
-      // Το Canonical δείχνει στο URL χωρίς .html
       const canonicalUrl = `${SITE_URL}/post/${slug}/`;
 
-      // JSON API
-      fs.writeFileSync(path.join(DIST_DIR, 'api', postJsonName), JSON.stringify(post, null, 2));
-
-      // Redirects (δείχνει πλέον στον φάκελο)
+      fs.writeFileSync(path.join(DIST_DIR, 'api', `${postID}.json`), JSON.stringify(post, null, 2));
       redirectLines.push(`/short/${postID}  /post/${slug}/  301`);
 
-      // HTML Content
       const postHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta charset="UTF-8">
     <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${post.Title} | Spreadsheeting Test</title>
     <meta name='description' content="${post.Title}" />
     <link rel="canonical" href="${canonicalUrl}" />
     <link rel="shortlink" href="${fullShortUrl}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
         body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
         img { max-width: 100%; border-radius: 12px; height: auto; }
@@ -120,17 +107,15 @@ async function build() {
     <main>
         <div class="content">${post.Content}</div>
         <div class="short-url-box">
-            <label>Short URL:</label>
+            <label>Σύνδεσμος κοινοποίησης (Short URL):</label>
             <input type="text" value="${fullShortUrl}" readonly onclick="this.select()">
         </div>
     </main>
 </body>
 </html>`;
       
-      // Γράφουμε το αρχείο ως index.html ΜΕΣΑ στο φάκελο του slug
       fs.writeFileSync(path.join(postFolder, 'index.html'), postHtml);
 
-      // Index card link (δείχνει στον φάκελο)
       indexCards += `
             <div class="card">
                 <div class="card-body">
@@ -141,16 +126,19 @@ async function build() {
             </div>`;
     });
 
-    // 4. Index.html (Main Page)
     const indexHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta charset="UTF-8">
     <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spreadsheeting Test</title>
+    <meta name='description' content='just test google spreadsheet ' />
     <link rel="canonical" href="${SITE_URL}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
         body { font-family: sans-serif; background: #ddd; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: auto; }
@@ -176,7 +164,7 @@ async function build() {
     fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), `User-agent: *\nAllow: /`);
     fs.writeFileSync(path.join(DIST_DIR, '_redirects'), redirectLines.join('\n'));
 
-    console.log('✨ Build complete! Your site is now SEO-friendly and working perfectly on Cloudflare.');
+    console.log('✨ Build complete! All Meta tags and Clean URLs are ready.');
   } catch (err) {
     console.error('💥 Build failed:', err);
   }
