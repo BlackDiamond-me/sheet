@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+
 // --- CONFIGURATION ---
 const SHEET_ID = '1ZHWN37AiS31AmREDukFhikvWBNdG1pEXl6v4KGXeTvc';
 const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
@@ -36,21 +37,18 @@ const slugify = text => {
 async function build() {
   try {
     console.log('🚀 Starting a fresh build...');
-    // 1. Καθαρισμός και προετοιμασία φακέλων
     if (fs.existsSync(DIST_DIR)) {
       fs.rmSync(DIST_DIR, { recursive: true, force: true });
     }
     fs.mkdirSync(DIST_DIR);
-    fs.mkdirSync(path.join(DIST_DIR, 'post')); // φάκελος για τα HTML
-    fs.mkdirSync(path.join(DIST_DIR, 'api'));  // φάκελος για τα JSON
+    fs.mkdirSync(path.join(DIST_DIR, 'post')); 
+    fs.mkdirSync(path.join(DIST_DIR, 'api'));  
 
-    // 2. Λήψη δεδομένων
     const response = await fetch(GVIZ_URL);
     const rawText = await response.text();
     const jsonString = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
     const data = JSON.parse(jsonString);
 
-    // Mapping Headers & Rows
     const cols = data.table.cols.map(col => col.label).filter(l => l !== '');
     const rows = data.table.rows.map(row => {
       let obj = {};
@@ -61,37 +59,33 @@ async function build() {
     });
     console.log(`📦 Processed ${rows.length} posts from Sheets.`);
 
-    // 3. Generation Loop
     let indexCards = '';
     let redirectLines = [];
+
     rows.forEach(post => {
       const slug = slugify(post.Title);
       const postID = post.id ? post.id.toString().trim() : 'no-id';
-      const postFileName = slug;
+      const postFileName = slug; 
       const postJsonName = `${postID}.json`;
       const fullShortUrl = `${SITE_URL}/short/${postID}`;
+      
+      // Το Canonical URL χωρίς .html στο τέλος
+      const canonicalUrl = `${SITE_URL}/post/${postFileName}`;
 
-      // JSON
       fs.writeFileSync(path.join(DIST_DIR, 'api', postJsonName), JSON.stringify(post, null, 2));
 
-      // Redirects
       redirectLines.push(`/short/${postID}  /post/${postFileName}  301`);
 
-      // HTML
       const postHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${post.Title} | Spreadsheeting Test</title>
     <meta name='description' content="${post.Title}" />
-    <link rel="canonical" href="${SITE_URL}/post/${postFileName}" />
+    <link rel="canonical" href="${canonicalUrl}" />
     <link rel="shortlink" href="${fullShortUrl}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
         body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }
         img { max-width: 100%; border-radius: 12px; height: auto; }
@@ -118,39 +112,33 @@ async function build() {
     </main>
 </body>
 </html>`;
+      
+      // Αποθήκευση ως αρχείο χωρίς επέκταση για Clean URLs
       fs.writeFileSync(path.join(DIST_DIR, 'post', postFileName), postHtml);
 
-      // Index card
       indexCards += `
             <div class="card">
                 <div class="card-body">
                     <h2>${post.Title}</h2>
                     <p>${post.Content ? post.Content.replace(/<[^>]*>/g, '').substring(0, 120) : ''}...</p>
-                    <a href="post/${postFileName}">Διαβάστε περισσότερα</a>
+                    <a href="/post/${postFileName}">Διαβάστε περισσότερα</a>
                 </div>
             </div>`;
     });
 
-    // Index.html
     const indexHtml = `
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta name="robots" content="noimageindex, noarchive, nofollow, noindex, nosnippet, nocache, notranslate" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spreadsheeting Test</title>
-    <meta name='description' content='just test google spreadsheet ' />
     <link rel="canonical" href="${SITE_URL}" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
         body { font-family: sans-serif; background: #ddd; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
         .card-body { padding: 20px; }
         .card-body h2 { margin-top: 0; font-size: 1.25rem; }
         .card-body a { color: #053ad7; text-decoration: none; font-weight: bold; }
@@ -168,12 +156,10 @@ async function build() {
 </html>`;
 
     fs.writeFileSync(path.join(DIST_DIR, 'index.html'), indexHtml);
-
-    // Robots.txt & _redirects
     fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), `User-agent: *\nAllow: /`);
     fs.writeFileSync(path.join(DIST_DIR, '_redirects'), redirectLines.join('\n'));
 
-    console.log('✨ Build complete! Your site is ready in /dist');
+    console.log('✨ Build complete! Clean URLs and Canonical tags are set.');
   } catch (err) {
     console.error('💥 Build failed:', err);
   }
