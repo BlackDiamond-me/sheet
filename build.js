@@ -5,16 +5,34 @@ const SHEET_ID = '1ZHWN37AiS31AmREDukFhikvWBNdG1pEXl6v4KGXeTvc';
 const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 const DIST_DIR = './dist';
 const SITE_URL = 'https://sheet-8jh.pages.dev'; // Το URL του site σου για τα shortlinks
-// Utility: Η δική σου συνάρτηση slugify
+
+// ==========================================================================================================
+// slugify-greekToLatinMap-transliterateGreek: metatrepeu tous ελληνικους χαρακτηρες se agglikous στα urls
+const greekToLatinMap = {
+  'α':'a','β':'v','γ':'g','δ':'d','ε':'e','ζ':'z','η':'i','θ':'th',
+  'ι':'i','κ':'k','λ':'l','μ':'m','ν':'n','ξ':'x','ο':'o','π':'p',
+  'ρ':'r','σ':'s','ς':'s','τ':'t','υ':'y','φ':'f','χ':'ch','ψ':'ps','ω':'o',
+  'ά':'a','έ':'e','ή':'i','ί':'i','ό':'o','ύ':'y','ώ':'o','ϊ':'i','ΐ':'i',
+  'ϋ':'y','ΰ':'y'
+};
+
+const transliterateGreek = text => {
+  return text.toLowerCase().split('').map(function(ch){
+    return greekToLatinMap[ch] || ch;
+  }).join('');
+};
+
 const slugify = text => {
   if (!text) return 'untitled';
-  return text.toString().toLowerCase().trim()
+  var latin = transliterateGreek(text.toString());
+  return latin.trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\u0370-\u03ff-]+/g, '')
+    .replace(/[^a-z0-9-]+/g, '')
     .replace(/\-\-+/g, '-')
     .replace(/^-+/, '')
     .replace(/-+$/, '');
 };
+
 async function build() {
   try {
     console.log('🚀 Starting a fresh build (Full CSS & Features)...');
