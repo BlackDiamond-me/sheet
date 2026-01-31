@@ -7,7 +7,7 @@ const DIST_DIR = './dist';
 const SITE_URL = 'https://sheet-8jh.pages.dev'; // Το URL του site σου για τα shortlinks
 
 // ==========================================================================================================
-// slugify-greekToLatinMap-transliterateGreek: metatrepeu tous ελληνικους χαρακτηρες se agglikous στα urls
+// slugify-greekToLatinMap-transliterateGreek: metatrepei tous ελληνικους χαρακτηρες se agglikous στα urls
 const greekToLatinMap = {
   'α':'a','β':'v','γ':'g','δ':'d','ε':'e','ζ':'z','η':'i','θ':'th',
   'ι':'i','κ':'k','λ':'l','μ':'m','ν':'n','ξ':'x','ο':'o','π':'p',
@@ -44,7 +44,7 @@ async function build() {
       });
     }
     fs.mkdirSync(DIST_DIR);
-    fs.mkdirSync(path.join(DIST_DIR, 'posts')); // Φάκελος για τα HTML
+    fs.mkdirSync(path.join(DIST_DIR, 'post')); // Φάκελος για τα HTML
     fs.mkdirSync(path.join(DIST_DIR, 'api')); // Φάκελος για τα JSON
     // 2. Λήψη Δεδομένων
     const response = await fetch(GVIZ_URL);
@@ -68,15 +68,15 @@ async function build() {
       const slug = slugify(post.Title);
       const postID = post.id ? post.id.toString().trim() : 'no-id'; // Παίρνουμε το ID
       // Ορισμός Paths
-      const postFileName = `${slug}.html`; // Όνομα αρχείου HTML
+      const postFileName = `${slug}`; // Όνομα αρχείου HTML
       const postJsonName = `${postID}.json`; // Όνομα αρχείου JSON (με βάση το ID)
       const fullShortUrl = `${SITE_URL}/short/${postID}`; // Το link που θα φαίνεται στο input
       // --- A. ΔΗΜΙΟΥΡΓΙΑ JSON (STATIC API) ---
       // Αποθηκεύουμε όλο το post object στο /api/[id].json
       fs.writeFileSync(path.join(DIST_DIR, 'api', postJsonName), JSON.stringify(post, null, 2));
       // --- B. ΕΓΓΡΑΦΗ REDIRECT ---
-      // Ορίζουμε ότι το /short/[id] πάει στο /posts/[slug].html
-      redirectLines.push(`/short/${postID}  /posts/${postFileName}  301`);
+      // Ορίζουμε ότι το /short/[id] πάει στο /post/[slug]
+      redirectLines.push(`/short/${postID}  /post/${postFileName}  301`);
       // --- C. ΔΗΜΙΟΥΡΓΙΑ ARTICLE ---
       ///////////////////////////////////////////////////////////////////////////////////////////========================
       const postHtml = `
@@ -119,7 +119,7 @@ async function build() {
     </style>
 </head>
 <body>
-    <nav><a href="/" class="back">← Επιστροφή</a></nav>
+    <nav><a href="/" class="back">← Αρχική</a></nav>
     <header>
         <h1>${post.Title}</h1>
         <div class="meta">Δημοσιεύτηκε: ${post.Puplished} | Tags: ${post.Tags}</div>
@@ -133,16 +133,16 @@ async function build() {
     </main>
 </body>
 </html>`;
-      // Αποθήκευση HTML στον φάκελο /posts/
-      fs.writeFileSync(path.join(DIST_DIR, 'posts', postFileName), postHtml);
+      // Αποθήκευση HTML στον φάκελο /post/
+      fs.writeFileSync(path.join(DIST_DIR, 'post', postFileName), postHtml);
       // --- D. INDEX CARD GENERATION ---
-      // Προσοχή: Το link πλέον δείχνει στο /posts/...
+      // Προσοχή: Το link πλέον δείχνει στο /post/...
       indexCards += `
             <div class="card">
                 <div class="card-body">
                     <h2>${post.Title}</h2>
                     <p>${post.Content ? post.Content.replace(/<[^>]*>/g, '').substring(0, 120) : ''}...</p>
-                    <a href="posts/${postFileName}">Διαβάστε περισσότερα</a>
+                    <a href="post/${postFileName}">Διαβάστε περισσότερα</a>
                 </div>
             </div>`;
     });
@@ -162,14 +162,14 @@ async function build() {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <style>
-        body { font-family: sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
+        body { font-family: sans-serif; background: #ddd; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .card img { width: 100%; height: 200px; object-fit: cover; }
         .card-body { padding: 20px; }
         .card-body h2 { margin-top: 0; font-size: 1.25rem; }
-        .card-body a { color: #007bff; text-decoration: none; font-weight: bold; }
+        .card-body a { color: #053ad7; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
